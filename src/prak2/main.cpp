@@ -21,7 +21,7 @@
 
 // Set these to your desired credentials.
 const char *ssid = "prak2";
-const char *password = "prak2";
+const char *password = "password";  
 
 WiFiServer server(80);
 

@@ -1,7 +1,16 @@
 #include <ModbusMaster.h>
 
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WiFiAP.h>
+
 // Create ModbusMaster object
 ModbusMaster node;
+
+const char *ssid = "prak3";
+const char *password = "password";
+
+WiFiServer server(502);
 
 void setup() {
   // Start the Serial Monitor
