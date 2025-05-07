@@ -48,11 +48,17 @@ void handleHTTPClient(WiFiClient client) {
   float hum  = humidityRaw / 10.0;
 
   client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/plain");
+  client.println("Content-Type: text/html");
   client.println("Connection: close");
   client.println();
-  client.printf("Temperature: %.1f °C\n", temp);
-  client.printf("Humidity: %.1f %%\n", hum);
+  client.println("<!DOCTYPE html><html><head><meta http-equiv='refresh' content='2'>");
+  client.println("<title>ESP32 Sensor Data</title></head><body>");
+  client.println("<h2>ESP32 Temperature & Humidity</h2>");
+  client.printf("<p><strong>Temperature:</strong> %.1f &deg;C</p>\n", temp);
+  client.printf("<p><strong>Humidity:</strong> %.1f %%</p>\n", hum);
+  client.println("<p>Auto-refreshing every 2 seconds</p>");
+  client.println("</body></html>");
+
   delay(1);
   client.stop();
 
