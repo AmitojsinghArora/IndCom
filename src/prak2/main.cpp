@@ -20,8 +20,8 @@
 #endif
 
 // Set these to your desired credentials.
-const char *ssid = "prak2";
-const char *password = "password";  
+const char *ssid = "Legendwaitforit";
+const char *password = "daryLegendary";  
 
 WiFiServer server(80);
 
