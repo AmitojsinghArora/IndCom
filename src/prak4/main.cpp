@@ -1,5 +1,5 @@
-// // CAN Send Example
-// //
+// // // CAN Send Example
+// // //
 
 // #include <mcp_can.h>
 // #include <SPI.h>
@@ -31,11 +31,11 @@
 //   delay(100);   // send data per 100ms
 // }
 
-// /*********************************************************************************************************
-//   END FILE
-// *********************************************************************************************************/
-// CAN Receive Example
-//
+// // /*********************************************************************************************************
+// //   END FILE
+// // *********************************************************************************************************/
+// // CAN Receive Example
+// //
 
 #include <mcp_can.h>
 #include <SPI.h>
@@ -66,6 +66,9 @@ void setup()
   Serial.println("MCP2515 Library Receive Example...");
 }
 
+
+byte data[8] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+
 void loop()
 {
   if(!digitalRead(CAN0_INT))                         // If CAN0_INT pin is low, read receive buffer
@@ -88,6 +91,14 @@ void loop()
         Serial.print(msgString);
       }
     }
+    //send data:  ID = 0x100, Standard CAN Frame, Data length = 8 bytes, 'data' = array of data bytes to send
+    // byte sndStat = CAN0.sendMsgBuf(0x100, 0, 8, data);
+    // if(sndStat == CAN_OK){
+    //   Serial.println("Message Sent Successfully!");
+    // } else {
+    //   Serial.println("Error Sending Message...");
+    // }
+    //  delay(100);   // send data per 100ms
         
     Serial.println();
   }

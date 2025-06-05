@@ -683,6 +683,7 @@ void loop()
                     delta_rotation = -delta_rotation;
                 }
                 
+                
                 bool rotatryButton_HasRisingEdge = false;
                 if(b.bit6 == 1)//Rotary button pressed COLOR Change mode
                 {

@@ -1,0 +1,169 @@
+[
+    {
+        "id": "5467adcef6e05894",
+        "type": "tab",
+        "label": "Flow 3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "18aaf5a348312953",
+        "type": "serial in",
+        "z": "5467adcef6e05894",
+        "name": "CAN receive serial",
+        "serial": "6dfa4a154afe7d3e",
+        "x": 250,
+        "y": 140,
+        "wires": [
+            [
+                "7515255730486d8e",
+                "586e722d530415af"
+            ]
+        ]
+    },
+    {
+        "id": "7515255730486d8e",
+        "type": "debug",
+        "z": "5467adcef6e05894",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "586e722d530415af",
+        "type": "function",
+        "z": "5467adcef6e05894",
+        "name": "data split",
+        "func": "let payload = msg.payload.toString().trim();\n\n// Extract ID, DLC, and Data\nlet idMatch = payload.match(/Standard ID:\\s*(0x[0-9A-Fa-f]+)/);\nlet dlcMatch = payload.match(/DLC:\\s*(\\d+)/);\nlet dataMatch = payload.match(/Data:\\s*((0x[0-9A-Fa-f]+\\s*)+)/);\n\n// If the format is wrong\nif (!idMatch || !dlcMatch || !dataMatch) {\n    node.error(\"Malformed CAN message\", msg);\n    return null;\n}\n\n// Extract values\nlet canID = idMatch[1];                       // \"0x690\"\nlet dlc = parseInt(dlcMatch[1]);              // 8\nlet dataArray = dataMatch[1].trim().split(/\\s+/);  // [\"0x11\", \"0x22\", ..., \"0x88\"]\n\n// Optional: Format Data nicely as string without \"0x\"\nlet dataString = dataArray.map(x => x.replace(\"0x\", \"\")).join(\" \");  // \"11 22 33 44 55 66 77 88\"\n\n// Send out on 3 outputs\nreturn [\n    { topic: \"can/id\", payload: canID },\n    { topic: \"can/dlc\", payload: dlc },\n    { topic: \"can/data\", payload: dataString }\n];\n",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 200,
+        "wires": [
+            [
+                "2d6a141023207fe3"
+            ],
+            [
+                "61d52a9d496deb59"
+            ],
+            [
+                "a7650a721b3ddaba"
+            ]
+        ]
+    },
+    {
+        "id": "2d6a141023207fe3",
+        "type": "ui_text",
+        "z": "5467adcef6e05894",
+        "group": "f4cc0aab3731722d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "CAN ID",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 700,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "61d52a9d496deb59",
+        "type": "ui_text",
+        "z": "5467adcef6e05894",
+        "group": "f4cc0aab3731722d",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "DLC:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 690,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "a7650a721b3ddaba",
+        "type": "ui_text",
+        "z": "5467adcef6e05894",
+        "group": "f4cc0aab3731722d",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Data:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 690,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "6dfa4a154afe7d3e",
+        "type": "serial-port",
+        "name": "ESP32",
+        "serialport": "COM6",
+        "serialbaud": "115200",
+        "databits": 8,
+        "parity": "none",
+        "stopbits": 1,
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "",
+        "responsetimeout": 10000
+    },
+    {
+        "id": "f4cc0aab3731722d",
+        "type": "ui_group",
+        "name": "CAN receive",
+        "tab": "686c992c0a433a8e",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "686c992c0a433a8e",
+        "type": "ui_tab",
+        "name": "CAN receive",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

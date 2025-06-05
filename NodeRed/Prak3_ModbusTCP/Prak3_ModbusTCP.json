@@ -1,0 +1,303 @@
+[
+    {
+        "id": "fa51654c74ac7848",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "32959e57ac266b9f",
+        "type": "inject",
+        "z": "fa51654c74ac7848",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 250,
+        "y": 100,
+        "wires": [
+            [
+                "9af10fca1f0b4038"
+            ]
+        ]
+    },
+    {
+        "id": "9af10fca1f0b4038",
+        "type": "function",
+        "z": "fa51654c74ac7848",
+        "name": "milliseconds to time",
+        "func": "let timestamp = msg.payload;\n\n// Check if timestamp is valid\nif (typeof timestamp !== 'number') {\n    msg.payload = \"Invalid timestamp\";\n    return msg;\n}\n\n// Convert timestamp to a Date object\nlet date = new Date(timestamp);\n\n// Format the date to a readable string\nlet readableTime = date.toISOString().replace(\"T\", \" \").substring(0, 19);\n\n// Set the new payload\nmsg.payload = readableTime;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 100,
+        "wires": [
+            [
+                "1f2451ae27adb4c3"
+            ]
+        ]
+    },
+    {
+        "id": "1f2451ae27adb4c3",
+        "type": "debug",
+        "z": "fa51654c74ac7848",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "e0778c18263ef367",
+        "type": "debug",
+        "z": "fa51654c74ac7848",
+        "name": "Temp output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "d21142117329233c",
+        "type": "modbus-read",
+        "z": "fa51654c74ac7848",
+        "name": "Temp Sensor",
+        "topic": "",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "",
+        "dataType": "InputRegister",
+        "adr": "0x01",
+        "quantity": "2",
+        "rate": "1",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "server": "43411649b250d640",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 270,
+        "y": 240,
+        "wires": [
+            [
+                "e0778c18263ef367",
+                "318c211f475fb0f4",
+                "85e2dec59427b750"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "318c211f475fb0f4",
+        "type": "function",
+        "z": "fa51654c74ac7848",
+        "name": "Temp parsing",
+        "func": "let Temp = msg.payload[0];\nmsg.payload = (Temp/10);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 320,
+        "wires": [
+            [
+                "a6c0e238f692f765"
+            ]
+        ]
+    },
+    {
+        "id": "85e2dec59427b750",
+        "type": "function",
+        "z": "fa51654c74ac7848",
+        "name": "Hum parsing",
+        "func": "let Hum = msg.payload[1];\nmsg.payload = Hum/10;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 380,
+        "wires": [
+            [
+                "1270b039a95d096b"
+            ]
+        ]
+    },
+    {
+        "id": "a6c0e238f692f765",
+        "type": "ui_chart",
+        "z": "fa51654c74ac7848",
+        "name": "",
+        "group": "c5a3333c7abd33ac",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "temp",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 690,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1270b039a95d096b",
+        "type": "ui_chart",
+        "z": "fa51654c74ac7848",
+        "name": "",
+        "group": "c5a3333c7abd33ac",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Hum",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 670,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "43411649b250d640",
+        "type": "modbus-client",
+        "name": "ModbusRTU",
+        "clienttype": "simpleser",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "127.0.0.1",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "COM4",
+        "serialType": "RTU",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 100,
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "c5a3333c7abd33ac",
+        "type": "ui_group",
+        "name": "ModbusRTU",
+        "tab": "de90c25d4f063e0a",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "de90c25d4f063e0a",
+        "type": "ui_tab",
+        "name": "ModbusRTU",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
