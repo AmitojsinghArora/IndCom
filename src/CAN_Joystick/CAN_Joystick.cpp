@@ -61,7 +61,7 @@ int howManyMillisHavePassed = 0;
 
 
 //Enum of all possible states:
-enum possibleModes{DEFAULT_MANUAL_SWITCHING_ON_SEGMENTS, CHANGE_COLOR, AUTOMATIC_MODE };
+enum possibleModes{DEFAULT_MANUAL_SWITCHING_ON_SEGMENTS, CHANGE_COLOR, AUTOMATIC_MODE, ROTATION_ANIMATION_MODE };
 
 //The current state:
 int state = DEFAULT_MANUAL_SWITCHING_ON_SEGMENTS;
@@ -71,6 +71,11 @@ int state = DEFAULT_MANUAL_SWITCHING_ON_SEGMENTS;
 bool rotatryButtonCurrentlyPressedDown = false;
 bool resetButtonCurrentlyPressedDown = false;
 bool automaticButtonCurrentlyPressedDown = false;
+bool statusButton3CurrentlyPressedDown = false;
+
+int rotationSegmentIndex = 0;
+unsigned long lastAnimationTime = 0;
+bool rotatingClockwise = true;
 
 
 union Byte
@@ -669,14 +674,19 @@ void loop()
                     automaticButtonCurrentlyPressedDown = false;
                 }
           
-
-
-
+                bool statusButton3_HasRisingEdge = false;
+                  if (nData[1] & 0x08) {  // bit 3 is 1
+                    if (!statusButton3CurrentlyPressedDown) {
+                      statusButton3_HasRisingEdge = true;
+                      statusButton3CurrentlyPressedDown = true;
+                    }
+                  } else {
+                  statusButton3CurrentlyPressedDown = false;
+                  }
 
                 Byte b;
                 b.byte = nData[3];
-
-               
+  
                 int delta_rotation = b.bit0 * 1 + b.bit1 * 2 + b.bit2 * 4 + b.bit3 * 8 + b.bit4 * 16;
                 if(b.bit5 == 1)//Rotary button pressed COLOR Change mode
                 {
@@ -766,7 +776,11 @@ void loop()
                             state = AUTOMATIC_MODE;
                             howManyMillisHavePassed = 0;
                         }
-
+                        if (statusButton3_HasRisingEdge) {
+                            state = ROTATION_ANIMATION_MODE;
+                            rotationSegmentIndex = 0;
+                            lastAnimationTime = millis();
+                        }
                         //Serial.print("Hey we are in default mode now\n\r");
 
 
@@ -868,8 +882,62 @@ void loop()
                             lightOffAllSegmentsAndKeys();
                         }
                     }break;
-                
-                
+                  case ROTATION_ANIMATION_MODE: {
+                    unsigned long now = millis();
+                    if (now - lastAnimationTime >= 150) {
+                        lastAnimationTime = now;
+
+                        // Update direction each frame from byte 3 bit 5
+                        rotatingClockwise = (nData[3] & 0x20) == 0;
+
+                        // Increment or decrement segment index
+                        rotationSegmentIndex = (rotationSegmentIndex + (rotatingClockwise ? 1 : -1) + 4) % 4;
+
+                        byte payload1[8] = {0, 0, 0, 0, 0, 0, 255, 255};
+                        byte payload2[8] = {0, 0, 0, 0, 0, 0, 255, 255};
+
+                        // Pick which segment to light up
+                        byte* segColor = yellow;
+                        byte* off = black;
+
+                        switch (rotationSegmentIndex) {
+                            case 0:
+                                std::copy(segColor, segColor + 3, payload1);         // segment 1
+                                std::copy(off, off + 3, payload1 + 3);
+                                break;
+                            case 1:
+                                std::copy(off, off + 3, payload1);
+                                std::copy(segColor, segColor + 3, payload1 + 3);     // segment 2
+                                break;
+                            case 2:
+                                std::copy(segColor, segColor + 3, payload2);         // segment 3
+                                std::copy(off, off + 3, payload2 + 3);
+                                break;
+                            case 3:
+                                std::copy(off, off + 3, payload2);
+                                std::copy(segColor, segColor + 3, payload2 + 3);     // segment 4
+                                break;
+                        }
+
+                        // Transmit
+                        J1939.Transmit(segments[0], priority, srcAddr, destAddr, payload1, length);
+                        J1939.Transmit(segments[1], priority, srcAddr, destAddr, payload2, length);
+                    }
+
+                    if (resetButton_HasRisingEdge) {
+                        state = DEFAULT_MANUAL_SWITCHING_ON_SEGMENTS;
+                        lightOffAllSegmentsAndKeys();
+                        reset();
+                    }
+                    if (statusButton3_HasRisingEdge) {
+                        state = DEFAULT_MANUAL_SWITCHING_ON_SEGMENTS;
+                        lightOffAllSegmentsAndKeys();
+                    }
+
+                    break;
+                  }
+
+
                 }
             }    
         }
