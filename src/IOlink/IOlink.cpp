@@ -36,6 +36,9 @@ void Device::OnNewCycle() {
   PDIn[0] = joyX;
   PDIn[1] = joyY;
 
+  Serial.print("Joystick X: "); Serial.print(joyX);
+  Serial.print(" Y: "); Serial.println(joyY);
+
   iol_device.SetPDIn(PDIn, sizeof(PDIn));
   iol_device.SetPDInStatus(Valid);
 }
