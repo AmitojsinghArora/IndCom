@@ -1,0 +1,172 @@
+[
+    {
+        "id": "a80aad40788b3d67",
+        "type": "tab",
+        "label": "Flow 4",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1bfd1d04a2a06db0",
+        "type": "mqtt in",
+        "z": "a80aad40788b3d67",
+        "name": "Joystick data",
+        "topic": "IOLink Device",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "ad51283fedd91f44",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 140,
+        "wires": [
+            [
+                "c2e13d035301d568"
+            ]
+        ]
+    },
+    {
+        "id": "46d2d4d52b36e741",
+        "type": "debug",
+        "z": "a80aad40788b3d67",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "c2e13d035301d568",
+        "type": "function",
+        "z": "a80aad40788b3d67",
+        "name": "Data processor",
+        "func": "try {\n    const pdinPath = \"/iolinkmaster/port[1]/iolinkdevice/pdin\";\n    const hexString = msg.payload?.data?.payload?.[pdinPath]?.data;\n\n    if (typeof hexString !== \"string\" || hexString.length !== 4) {\n        node.error(\"Invalid or missing hex data: \" + hexString);\n        return null;\n    }\n\n    const buffer = Buffer.from(hexString, 'hex');\n    const joyX = buffer[0];\n    const joyY = buffer[1];\n\n    // Send both as individual messages to the same output\n    node.send({ topic: \"joystick/x\", payload: joyX });\n    node.send({ topic: \"joystick/y\", payload: joyY });\n\n    return null;\n\n} catch (err) {\n    node.error(\"Error processing joystick data: \" + err.message);\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 140,
+        "wires": [
+            [
+                "95931af86814e19e"
+            ]
+        ],
+        "outputLabels": [
+            "joyX"
+        ]
+    },
+    {
+        "id": "a4d8275685743557",
+        "type": "ui_template",
+        "z": "a80aad40788b3d67",
+        "group": "c6dfd006b88d5094",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<canvas id=\"joystickCanvas\" width=\"300\" height=\"300\" style=\"border:1px solid #ccc;\"></canvas>\n<p>X: <span id=\"joyX\">-</span> &nbsp;&nbsp; Y: <span id=\"joyY\">-</span></p>\n\n<script>\n(function(scope) {\n    const canvas = document.getElementById(\"joystickCanvas\");\n    const ctx = canvas.getContext(\"2d\");\n    const width = canvas.width;\n    const height = canvas.height;\n\n    // Adjusted center based on hardware behavior\n    const centerVal = 175;\n    const maxRange = Math.max(centerVal, 255 - centerVal); // symmetrical range to handle full scale\n\n    function drawJoystick(x, y) {\n        ctx.clearRect(0, 0, width, height);\n\n        // Background grid\n        ctx.strokeStyle = '#ccc';\n        ctx.lineWidth = 1;\n        ctx.beginPath();\n        ctx.moveTo(width / 2, 0);\n        ctx.lineTo(width / 2, height);\n        ctx.moveTo(0, height / 2);\n        ctx.lineTo(width, height / 2);\n        ctx.stroke();\n\n        // Joystick dot\n        ctx.beginPath();\n        ctx.arc(x, y, 8, 0, 2 * Math.PI);\n        ctx.fillStyle = \"#007bff\";\n        ctx.fill();\n        ctx.stroke();\n    }\n\n    scope.$watch('msg', function(msg) {\n        if (!msg || !msg.payload) return;\n\n        const joyX = msg.payload[\"joystick/x\"];\n        const joyY = msg.payload[\"joystick/y\"];\n\n        if (joyX == null || joyY == null) return;\n\n        // Offset from center\n        const offsetX = joyX - centerVal;\n        const offsetY = joyY - centerVal;\n\n        // Scale to canvas\n        const scaledX = width / 2 + (offsetX / maxRange) * (width / 2);\n        const scaledY = height / 2 + (offsetY / maxRange) * (height / 2);\n\n        drawJoystick(scaledX, scaledY);\n\n        document.getElementById(\"joyX\").innerText = joyX;\n        document.getElementById(\"joyY\").innerText = joyY;\n    });\n})(scope);\n</script>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 700,
+        "y": 140,
+        "wires": [
+            [
+                "46d2d4d52b36e741"
+            ]
+        ]
+    },
+    {
+        "id": "95931af86814e19e",
+        "type": "join",
+        "z": "a80aad40788b3d67",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 570,
+        "y": 140,
+        "wires": [
+            [
+                "a4d8275685743557"
+            ]
+        ]
+    },
+    {
+        "id": "ad51283fedd91f44",
+        "type": "mqtt-broker",
+        "name": "Mqtt",
+        "broker": "192.100.100.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "c6dfd006b88d5094",
+        "type": "ui_group",
+        "name": "Iolink Joystick",
+        "tab": "afa3a3b164c32212",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "afa3a3b164c32212",
+        "type": "ui_tab",
+        "name": "Joystick",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
