@@ -39,7 +39,7 @@ This project implements a CAN bus communication system using an MCP2515 and ESP3
 - Change LED colors based on a color wheel when in `DETECT_DIRECTION` state
 - Communication handled via CAN bus
 
-**Folder**: `src/CAN_Joystick/`
+**Folder**: `src/CAN_J1939_joystick/`
 
 ---
 
@@ -58,7 +58,7 @@ This project demonstrates IO-Link communication between an IFM AL1330 master and
 - Joystick data acquisition via IO-Link
 - Real-time visualization in Node-RED
 
-**Folder**: `iolink_nodered/`
+**Folder**: `src/IOlink`
 
 ---
 
@@ -66,9 +66,10 @@ This project demonstrates IO-Link communication between an IFM AL1330 master and
 
 Each project folder contains its own code and dependencies. To run any of the projects:
 
-1. Clone the repository:
+Clone the repository:
    ```bash
    git clone https://github.com/AmitojsinghArora/IndCom.git
    cd src
    ```
-   Enter the folder Modbus_TCP or CAN_Joystick or IOlink to run the respective protocols
+   Enter the folder Modbus_TCP or CAN_J1939_joystick or IOlink to run/test the respective codes.
+
